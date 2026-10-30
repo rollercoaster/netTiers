@@ -352,6 +352,18 @@ namespace <%=RootNameSpace%>.Web.UI
         #region Life Cycle
 
         /// <summary>
+        /// Bugfix for DataKeys being empty in ondeleting. Touching these both counts somehow fixes the issue.
+        /// </summary>
+        protected override void LoadViewState(object savedState)
+        {
+            base.LoadViewState(savedState);
+
+            //Workaround
+            _ = Rows.Count;
+            _ = DataKeys.Count;
+        }
+
+        /// <summary>
         /// Occurs when the server control is initialized.
         /// </summary>
         /// <param name="e"></param>
@@ -938,6 +950,10 @@ namespace <%=RootNameSpace%>.Web.UI
         public virtual void ExportCSV(string reportName, Page currentPage, GridView GridView1)
         {
             ClearChildControls(GridView1);
+
+            GridView1.PageIndex = 0;
+            GridView1.PageSize = int.MaxValue;
+            GridView1.DataSourceID = GridView1.DataSourceID;
 
             currentPage.DataBind();
 
