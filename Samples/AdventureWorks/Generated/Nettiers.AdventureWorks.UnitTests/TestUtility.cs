@@ -26,9 +26,32 @@ namespace Nettiers.AdventureWorks.UnitTests
         //Random class used when generating strings.  Using these classes will
         //guarantee that multiple calls to these functions should return
         //random values.
-        private Random _stringRandom = new Random();
-        private Random _dateRandom = new Random();
-        private Random _numberRandom = new Random();
+        private static readonly System.Security.Cryptography.RandomNumberGenerator _rng =
+            System.Security.Cryptography.RandomNumberGenerator.Create();
+
+        // Uniform int in [min, max) using rejection sampling.
+        private static int NextInt(int min, int max)
+        {
+            if (min >= max)
+                return min;
+
+            uint range = (uint)((long)max - min);
+            uint limit = uint.MaxValue - (uint.MaxValue % range);
+            byte[] buf = new byte[4];
+            uint value;
+            do
+            {
+                _rng.GetBytes(buf);
+                value = BitConverter.ToUInt32(buf, 0);
+            } while (value >= limit);
+
+            return (int)(min + (value % range));
+        }
+
+        private static char NextUpperChar()
+        {
+            return (char)('A' + NextInt(0, 26));
+        }
 
         private DateTime _minDate = new DateTime(1990, 1, 1);
         private DateTime _maxDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
@@ -72,7 +95,7 @@ namespace Nettiers.AdventureWorks.UnitTests
         /// <returns>Random Number</returns>
 		public int RandomNumber(int min, int max)
 		{
-            return _numberRandom.Next(min, max);
+            return NextInt(min, max);
 		}
 
 		/// <summary>
@@ -90,7 +113,7 @@ namespace Nettiers.AdventureWorks.UnitTests
 
             for (int i = 0; i < size; i++)
             {
-                ch = Convert.ToChar(Convert.ToInt32(26 * _stringRandom.NextDouble() + 65));
+                ch = NextUpperChar();
                 builder.Append(ch);
             }
 
@@ -123,7 +146,7 @@ namespace Nettiers.AdventureWorks.UnitTests
             int totalDays = (int)((TimeSpan)maxDate.Subtract(minDate)).TotalDays;
 
             //Pick a random date in between
-            int randomDays = _dateRandom.Next(0, totalDays);
+            int randomDays = NextInt(0, totalDays);
 
             //Return the random day.
             return minDate.AddDays(randomDays);
@@ -151,7 +174,7 @@ namespace Nettiers.AdventureWorks.UnitTests
             int totalSeconds = (int)((TimeSpan)maxDate.Subtract(minDate)).TotalSeconds;
 
             //Pick a random date in between
-            int randomSeconds = _dateRandom.Next(0, totalSeconds);
+            int randomSeconds = NextInt(0, totalSeconds);
 
             //Return the random date.
             return minDate.AddSeconds(randomSeconds);
@@ -173,7 +196,7 @@ namespace Nettiers.AdventureWorks.UnitTests
         /// <returns>Random Character</returns>
         public char RandomChar()
         {
-            return Convert.ToChar(Convert.ToInt32(26 * _stringRandom.NextDouble() + 65));
+            return NextUpperChar();
         }
 
         /// <summary>
