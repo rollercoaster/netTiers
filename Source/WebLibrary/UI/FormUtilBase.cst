@@ -887,7 +887,11 @@ namespace <%= WebNameSpace %>.UI
 		{
 			String sort = HttpContext.Current.Server.UrlEncode(gridView.SortExpression);
 			int dir = (int) gridView.SortDirection;
-			return String.Format(url, gridView.PageIndex, sort, dir, gridView.SelectedIndex);
+			return (url ?? String.Empty)
+				.Replace("{0}", gridView.PageIndex.ToString())
+				.Replace("{1}", sort)
+				.Replace("{2}", dir.ToString())
+				.Replace("{3}", gridView.SelectedIndex.ToString());
 		}
 
 		/// <summary>
